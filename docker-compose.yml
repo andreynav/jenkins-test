@@ -1,0 +1,31 @@
+version: '3.5'
+services:
+  c-jenkins:
+    image: jenkins/jenkins
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    volumes:
+      - '~/Documents/docker/jenkins-test:/var/jenkins_home'
+      - '~/.ssh:/var/jenkins_home/.ssh'
+      - '${SSH_AUTH_SOCK}:/ssh-agent'
+    environment:
+      - SSH_AUTH_SOCK=/ssh-agent
+    container_name: c-jenkins
+    restart: 'always'
+
+  ngrok:
+    image: ngrok/ngrok
+    depends_on:
+      - c-jenkins
+    ports:
+      - '4040:4040'
+    links:
+      - c-jenkins:jenkins
+    command: bash -c "while ! curl -sSL -f http://c-jenkins:8080 >/dev/null; do sleep 1; done && ngrok http c-jenkins:8080"
+    restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-sSL", "-f", "http://c-jenkins:8080" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
