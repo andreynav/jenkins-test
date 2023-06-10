@@ -4,8 +4,11 @@ pipeline {
     stages {
         stage("Build") {
             steps {
-                ls -la
-                cat index.html
+                sh '''#!/bin/bash
+                   ls -la
+                   cat index.html
+                   echo "Build by Jenkins Build# $BUILD_ID"
+                '''
                 echo "Build by Jenkins Build# $BUILD_ID"
             }
         }
